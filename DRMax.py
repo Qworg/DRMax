@@ -7,9 +7,11 @@ with open('CharacterSkillsNoCost.csv') as csvfile:
     for name in reader.fieldnames:
         #FOR IRONS
         #if name != "Psionist":
+        #FOR BAYWALKERS
+        if name != "Saw Bones" and name != "Primitive" and name != "Thug":
         #Restriction lists
             #if name != "Sniper": #and name != "Assassin" and name != "Spy" and name != "Thief" and name != "Scoundrel" and name != "Gambler":
-            if name != "Tinker" and name != "Sniper" and name != "Saw Bones" and name != "Hook-up":
+            if name != "Tinker" and name != "Sniper" and name != "Hook-up":
                 profs[name] = set()
     for row in reader:
         for key in profs:
