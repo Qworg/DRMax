@@ -6,18 +6,22 @@ with open('CharacterSkillsNoCost.csv') as csvfile:
     reader = csv.DictReader(csvfile)
     for name in reader.fieldnames:
         #FOR IRONS
-        if name != "Psionist":
+        #if name != "Psionist":
         #Restriction lists
-        #if name != "Sniper" and name != "Assassin" and name != "Spy" and name != "Thief" and name != "Scoundrel" and name != "Gambler":
-            if name != "Tinker" and name != "Sniper": #and name != "Saw Bones":
+            #if name != "Sniper": #and name != "Assassin" and name != "Spy" and name != "Thief" and name != "Scoundrel" and name != "Gambler":
+            if name != "Tinker" and name != "Sniper" and name != "Saw Bones" and name != "Hook-up":
                 profs[name] = set()
     for row in reader:
         for key in profs:
             test = profs[key]
+            #FOR BAYWALKER
+            if row[key] != '' and row[key] != 'Analyze Creature' and row[key] != 'Double Tap' and row[key] != 'First Aide' and row[key] != 'Instruct' and row[key] != 'Literacy' and row[key] != 'Parry':
             #FOR NOA
             #if row[key] != '' and row[key] != 'Building Tomorrow' and row[key] != 'Challenge' and row[key] != 'Faith Healing' and row[key] != 'First Aide' and row[key] != 'Mind Resistance' and row[key] != 'Patch Job':
             #FOR IRONS
-            if row[key] != '' and row[key] != 'Disguise' and row[key] != 'Cover of Night' and row[key] != 'Vanish' and row[key] != 'Fade in a Crowd' and row[key] != 'Carry' and row[key] != 'Escape Bonds' and row[key] != 'Brawling' and row[key] != 'Iron Fists' and row[key] != 'Refuse' and row[key] != 'Rescue' and row[key] != 'Scrounge':
+            #if row[key] != '' and row[key] != 'Disguise' and row[key] != 'Cover of Night' and row[key] != 'Vanish' and row[key] != 'Fade in a Crowd' and row[key] != 'Carry' and row[key] != 'Escape Bonds' and row[key] != 'Brawling' and row[key] != 'Iron Fists' and row[key] != 'Refuse' and row[key] != 'Rescue' and row[key] != 'Scrounge':
+            #FOR REMENANTS
+            #if row[key] != '':
             #FOR RETROGRADES
             #if row[key] != '' and row[key] != 'Barridcade' and row[key] != 'Cover of Night' and row[key] != 'Disguise' and row[key] != 'Escape Bonds' and row[key] != 'Feign Death' and row[key] != 'Melee Weapon Standard' and row[key] != 'Scrounge':
                 test.add(row[key])
@@ -25,7 +29,7 @@ with open('CharacterSkillsNoCost.csv') as csvfile:
 
 disjointDict = {}
 #Set your current classes
-firstClass = "Printer"
+firstClass = "Psionist"
 secondClass = ""
 for prof1 in profs:
     if firstClass != "":
