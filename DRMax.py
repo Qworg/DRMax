@@ -9,9 +9,14 @@ with open('CharacterSkillsNoCost.csv') as csvfile:
         #if name != "Psionist":
         #FOR BAYWALKERS
         #if name != "Saw Bones" and name != "Primitive" and name != "Thug":
+        #FOR VEGASIANS
+        if name != "Guard" and name != "Gunslinger" and name != "Martial Artist" and name != "Officer":
         #Restriction lists
+            #MIND RESIST
+            #if name == "Printer" or name == "Charlatan" or name == "Mad Scientist" or name == "Priest" or name == "Politician" or name == "Doctor":
             #if name != "Sniper":# and name != "Assassin" and name != "Hunter":# and name != "Spy" and name != "Thief" and name != "Scoundrel" and name != "Gambler":
-            if name != "Tinker" and name != "Sniper":# and name != "Hook-up":
+            if name != "Tinker" and name != "Sniper" and name != "Hunter" and name != "Priest" and name != "Saw Bones" and name != "Soldier":# and name != "Hook-up":
+            #if name != "Saw Bones" and name != "Tinker":
                 profs[name] = set()
     for row in reader:
         for key in profs:
@@ -23,20 +28,22 @@ with open('CharacterSkillsNoCost.csv') as csvfile:
             #FOR NOA
             #if row[key] != '' and row[key] != 'Building Tomorrow' and row[key] != 'Challenge' and row[key] != 'Faith Healing' and row[key] != 'First Aide' and row[key] != 'Mind Resistance' and row[key] != 'Patch Job':
             #FOR PURE BLOOD
-            if row[key] != '' and  row[key] != 'Backstab' and row[key] != 'Bolt Action' and row[key] != 'Charisma' and row[key] != 'Cheat' and row[key] != 'Check Value' and row[key] != 'Income' and row[key] != 'Literacy':
+            #if row[key] != '' and  row[key] != 'Backstab' and row[key] != 'Bolt Action' and row[key] != 'Charisma' and row[key] != 'Cheat' and row[key] != 'Check Value' and row[key] != 'Income' and row[key] != 'Literacy':
             #FOR REMENANTS
             #if row[key] != '':
             #FOR RETROGRADES
             #if row[key] != '' and row[key] != 'Barridcade' and row[key] != 'Cover of Night' and row[key] != 'Disguise' and row[key] != 'Escape Bonds' and row[key] != 'Feign Death' and row[key] != 'Melee Weapon Standard' and row[key] != 'Scrounge':
             #FOR ROVERS
             #if row[key] != '' and row[key] != 'Bartender Tongue' and row[key] != 'Check Your Sleeves' and row[key] != 'Head Shrink' and row[key] != 'Melee Weapon Small' and row[key] != 'Refuse' and row[key] != 'Scrounge':
+            #FOR VEGASIANS
+            if row[key] != '' and row[key] != 'Backstab' and row[key] != 'Black Market Connections' and row[key] != 'Cheat' and row[key] != 'Entertainer' and row[key] != 'Lie' and row[key] != 'Literacy':
                 test.add(row[key])
             profs[key] = test
 
 disjointDict = {}
 #Set your current classes
-firstClass = "Gambler"
-secondClass = ""
+firstClass = "Publican"
+secondClass = "Spy"
 for prof1 in profs:
     if firstClass != "":
         set1 = profs[firstClass]
