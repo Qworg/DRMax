@@ -7,6 +7,10 @@
  - Score skills based on power level
  - Create the "most powerful" build based on that score
 
+- Must have Skill List
+ - Lists of defensive skills and escapes as required
+ - Single click access
+
 - Separate Strain List data
 
 - Separate Open List data
