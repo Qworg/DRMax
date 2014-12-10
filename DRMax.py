@@ -10,111 +10,130 @@ from kivy.uix.label import Label
 # class MyApp(App):
 #
 # def build(self):
-#         return Label(text='Hello World')
+# return Label(text='Hello World')
 #
 # if __name__ == '__main__':
-#     MyApp().run()
+# MyApp().run()
 
-
-conn = sqlite3.connect('DRMax.db')
-c = conn.cursor()
 
 # Set your strain
 strain = "Iron Slaves"
 # Set your current classes
 firstClass = "Printer"
 secondClass = ""
+strainSkills = list()
+openSkills = list()
+profs = {}
 
 Skills = namedtuple('Skills', 'Skill, Cost')
 
-StrainSkills = list()
-OpenSkills = list()
-profs = {}
-# Get Strain Skills
-c.execute('SELECT Skill,Cost FROM "Strain Skill List" WHERE Strain=?', (strain,))
-for sk in map(Skills._make, c.fetchall()):
-    StrainSkills.append(sk)
 
-# Fetch set of blocked skills
-c.execute('SELECT Skill '
-          'FROM "Strain Skill Restrictions" '
-          'WHERE '
-          'Strain = ? ', (strain, ))
+def fetch_skills(strain_in, first_class_in=""):
+    conn = sqlite3.connect('DRMax.db')
+    c = conn.cursor()
+    strain_skills_out = list()
+    open_skills_out = list()
+    blocked_skills = {}
+    profs_out = {}
 
-blockedSkillsSQL = c.fetchall()
+    # Get Strain Skills
+    c.execute('SELECT Skill,Cost FROM "Strain Skill List" WHERE Strain=?', (strain_in,))
+    for sk in map(Skills._make, c.fetchall()):
+        strain_skills_out.append(sk)
 
-blockedSkills = {}
-for bs in blockedSkillsSQL:
-    blockedSkills[bs[0]] = 1
-
-# Get Open Skills
-c.execute('SELECT Skill,Cost FROM "Open Skill List"')
-for ok in map(Skills._make, c.fetchall()):
-    if ok.Skill not in blockedSkills:
-        OpenSkills.append(ok)
-
-# Fetch set of allowable professions
-if firstClass != "":
-    # We have a profession already (perhaps two)
-    c.execute('SELECT p.Profession,p.Skill,p.Cost '
-              'FROM "Profession Skill List" p '
+    # Fetch set of blocked skills
+    c.execute('SELECT Skill '
+              'FROM "Strain Skill Restrictions" '
               'WHERE '
-              'NOT EXISTS ('
-              'SELECT s.Profession FROM "Strain Profession Restrictions" s '
-              'WHERE s.Strain = ? '
-              'AND p.Profession = s.Profession '
-              'AND s."First Only" = "FALSE")', (strain, ))
-else:
-    # No Profession? OK, apply the whole list of restrictions
-    c.execute('SELECT p.Profession,p.Skill,p.Cost '
-              'FROM "Profession Skill List" p '
-              'WHERE '
-              'NOT EXISTS ('
-              'SELECT s.Profession FROM "Strain Profession Restrictions" s '
-              'WHERE s.Strain = ? '
-              'AND p.Profession = s.Profession)', (strain, ))
+              'Strain = ? ', (strain_in, ))
 
-possibleProfsSQL = c.fetchall()
+    blocked_skills_sql = c.fetchall()
 
-for pp in possibleProfsSQL:  # take all this data, and push it into a dictionary of sets of named tuples ("Skills")
-    if pp[0] not in profs:
-        profs[pp[0]] = set()
-    test = profs[pp[0]]
-    skTup = Skills(pp[1], pp[2])
-    if skTup.Skill not in blockedSkills:
-        test.add(skTup)
-    profs[pp[0]] = test
+    for bs in blocked_skills_sql:
+        blocked_skills[bs[0]] = 1
 
+    # Get Open Skills
+    c.execute('SELECT Skill,Cost FROM "Open Skill List"')
+    for ok in map(Skills._make, c.fetchall()):
+        if ok.Skill not in blocked_skills:
+            open_skills_out.append(ok)
 
-disjointDict = {}
-
-for prof1 in profs:
-    if firstClass != "":
-        set1 = profs[firstClass]
+    # Fetch set of allowable professions
+    if first_class_in != "":
+        # We have a profession already (perhaps two)
+        c.execute('SELECT p.Profession,p.Skill,p.Cost '
+                  'FROM "Profession Skill List" p '
+                  'WHERE '
+                  'NOT EXISTS ('
+                  'SELECT s.Profession FROM "Strain Profession Restrictions" s '
+                  'WHERE s.Strain = ? '
+                  'AND p.Profession = s.Profession '
+                  'AND s."First Only" = "FALSE")', (strain_in, ))
     else:
-        set1 = profs[prof1]
-    for prof2 in profs:
-        if secondClass != "":
-            set2 = profs[secondClass]
-        else:
-            set2 = profs[prof2]
-        for prof3 in profs:
-            set3 = profs[prof3]
-            if firstClass != "" and secondClass == "":
-                disjointDict[firstClass + ", " + prof2 + ", " + prof3] = len(set1 | set2 | set3)
-            elif firstClass != "" and secondClass != "":
-                disjointDict[firstClass + ", " + secondClass + ", " + prof3] = len(set1 | set2 | set3)
-            else:
-                disjointDict[prof1 + ", " + prof2 + ", " + prof3] = len(set1 | set2 | set3)
+        # No Profession? OK, apply the whole list of restrictions
+        c.execute('SELECT p.Profession,p.Skill,p.Cost '
+                  'FROM "Profession Skill List" p '
+                  'WHERE '
+                  'NOT EXISTS ('
+                  'SELECT s.Profession FROM "Strain Profession Restrictions" s '
+                  'WHERE s.Strain = ? '
+                  'AND p.Profession = s.Profession)', (strain_in, ))
 
-maxKey = max(disjointDict, key=disjointDict.get)
-maxVal = disjointDict[maxKey]
-# print(maxKey)
-print(maxVal)
-for key, val in disjointDict.items():
-    if val == maxVal:
-        print(key)
-maxList = maxKey.split(", ")
-maxSkills = list(profs[maxList[0]] | profs[maxList[1]] | profs[maxList[2]])
-maxSkills.sort()
-print(maxSkills)
+    possible_profs_sql = c.fetchall()
+
+    for pp in possible_profs_sql:  # take all this data, and push it into a dictionary of sets of named tuples ("Skills")
+        if pp[0] not in profs_out:
+            profs_out[pp[0]] = set()
+        test = profs_out[pp[0]]
+        temp_skill_tuple = Skills(pp[1], pp[2])
+        if temp_skill_tuple.Skill not in blocked_skills:
+            test.add(temp_skill_tuple)
+        profs_out[pp[0]] = test
+
+    conn.close()
+    return open_skills_out, strain_skills_out, profs_out
+
+
+def maximal_skill_set(open_skills_in, strain_skills_in, profs_in):
+    disjoint_dict = {}
+
+    for prof1 in profs_in:
+        if firstClass != "":
+            set1 = profs_in[firstClass]
+        else:
+            set1 = profs_in[prof1]
+        for prof2 in profs_in:
+            if secondClass != "":
+                set2 = profs_in[secondClass]
+            else:
+                set2 = profs_in[prof2]
+            for prof3 in profs_in:
+                set3 = profs_in[prof3]
+                if firstClass != "" and secondClass == "":
+                    disjoint_dict[firstClass + ", " + prof2 + ", " + prof3] = len(set1 | set2 | set3)
+                elif firstClass != "" and secondClass != "":
+                    disjoint_dict[firstClass + ", " + secondClass + ", " + prof3] = len(set1 | set2 | set3)
+                else:
+                    disjoint_dict[prof1 + ", " + prof2 + ", " + prof3] = len(set1 | set2 | set3)
+
+    max_key = max(disjoint_dict, key=disjoint_dict.get)
+    max_value = disjoint_dict[max_key]
+    # print(max_key)
+    print(max_value)
+    for key, val in disjoint_dict.items():
+        if val == max_value:
+            print(key)
+    max_list = max_key.split(", ")
+    max_skills = list(profs_in[max_list[0]] | profs_in[max_list[1]] | profs_in[max_list[2]])
+    max_skills.sort()
+    print(max_skills)
+
+
+openSkills, strainSkills, profs_in = fetch_skills(strain, firstClass)
+maximal_skill_set(openSkills, strainSkills, profs)
+
+
+
+
+
+
