@@ -1,5 +1,5 @@
 __author__ = 'jekramer'
-import csv
+
 import sqlite3
 from collections import namedtuple
 import kivy
