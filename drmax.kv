@@ -5,7 +5,6 @@ SelectionForm:
     height: 40
     pos_hint: {'center_x': .5, 'center_y': .5}
     text: root.professions_text
-    values: root.professions_list
 
 <StrainSpinner@Spinner>
     size_hint: (None, None)
@@ -49,10 +48,13 @@ SelectionForm:
                 size: 200, 40
             ProfessionSpinner:
                 id: pspinner1
+                values: root.first_professions_list
             ProfessionSpinner:
                 id: pspinner2
+                values: root.professions_list
             ProfessionSpinner:
                 id: pspinner3
+                values: root.professions_list
         ScrollView:
             do_scroll_x: False
             GridLayout:

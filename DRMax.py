@@ -35,6 +35,43 @@ def fetch_professions():
     conn.close()
     return professions_out
 
+# Fetch Limited Professions List (given Strain)
+def fetch_strain_limited_professions(strain_in):
+    conn = sqlite3.connect('DRMax.db')
+    c = conn.cursor()
+    professions_out = list()
+    first_professions_out = list()
+
+    # Get First Professions List
+    c.execute('SELECT p.Profession '
+              'FROM "Profession Skill List" p '
+              'WHERE '
+              'NOT EXISTS ('
+              'SELECT s.Profession FROM "Strain Profession Restrictions" s '
+              'WHERE s.Strain = ? '
+              'AND p.Profession = s.Profession)', (strain_in, ))
+
+    possible_profs_sql = c.fetchall()
+
+    for pp in possible_profs_sql:
+        first_professions_out.append(pp[0])
+
+    # Get Second+ Profs List
+    c.execute('SELECT p.Profession '
+              'FROM "Profession Skill List" p '
+              'WHERE '
+              'NOT EXISTS ('
+              'SELECT s.Profession FROM "Strain Profession Restrictions" s '
+              'WHERE s.Strain = ? '
+              'AND p.Profession = s.Profession '
+              'AND s."First Only" = "FALSE")', (strain_in, ))
+
+    possible_profs_sql = c.fetchall()
+
+    for pp in possible_profs_sql:
+        professions_out.append(pp[0])
+
+    return first_professions_out,professions_out
 
 # Fetch Strain List
 def fetch_strains():
@@ -209,7 +246,8 @@ class SelectionForm(BoxLayout):
     output_text_prop = StringProperty()
     open_skill_list_button_text = StringProperty()
     open_skill_list_on = BooleanProperty()
-
+    professions_list = ListProperty()
+    first_professions_list = ListProperty()
 
     def __init__(self, **kwargs):
         super(SelectionForm, self).__init__(**kwargs)
@@ -218,6 +256,13 @@ class SelectionForm(BoxLayout):
         self.open_skill_list_on = False
         self.ids.solve_button.bind(on_press=self.solve_character)
         self.ids.open_skill_list_button.bind(on_press=self.open_skill_list_toggle)
+        # BUG: Ergh.  This sucks.  There doesn't seem to be a good way to do interwidget communication
+        self.ids.sspinner.bind(strain_text=self.update_profession_lists)
+
+    def update_profession_lists(self, strain_in):
+        self.ids.pspinner1.fillProfessions(strain_in)
+        self.ids.pspinner2.fillProfessions(strain_in)
+        self.ids.pspinner3.fillProfessions(strain_in)
 
     def solve_character(self, btn_pressed):
         print("Solving!")
@@ -257,13 +302,13 @@ class StrainSpinner(Spinner):
     strain_list = fetch_strains()
     strain_text = StringProperty()
     strain_text = "Select Strain"
+
     def __init__(self, **kwargs):
         super(StrainSpinner, self).__init__(**kwargs)
         self.bind(text=self.get_selected_value)
 
     def get_selected_value(self, object_out, *args):
         self.strain_text = args[0]
-        return True
 
     def getStrain(self):
         if self.strain_text == "Select Strain":
@@ -273,10 +318,11 @@ class StrainSpinner(Spinner):
 
 
 class ProfessionSpinner(Spinner):
-    professions_list = ListProperty()
-    professions_list = fetch_professions()
+
+    #professions_list = fetch_professions()
     professions_text = StringProperty()
     professions_text = "Select Profession"
+
     def __init__(self, **kwargs):
         super(ProfessionSpinner, self).__init__(**kwargs)
         self.bind(text=self.get_selected_value)
@@ -290,6 +336,9 @@ class ProfessionSpinner(Spinner):
             return ""
         else:
             return self.professions_text
+
+    def fillProfessions(self, strain_in):
+        self.first_professions_list, self.professions_list = fetch_strain_limited_professions(strain_in)
 
 
 class DRMax(App):
