@@ -12,7 +12,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
-from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.label import Label
+from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty, DictProperty
 
 
 Skills = namedtuple('Skills', 'Skill, Cost')
@@ -71,6 +73,7 @@ def fetch_strain_limited_professions(strain_in):
     for pp in possible_profs_sql:
         professions_out.append(pp[0])
 
+    conn.close()
     return first_professions_out,professions_out
 
 # Fetch Strain List
@@ -91,6 +94,48 @@ def fetch_strains():
     return strains_out
 
 
+def fetch_blocked_skills(strain_in):
+    conn = sqlite3.connect('DRMax.db')
+    c = conn.cursor()
+    blocked_skills = {}
+    # Fetch set of blocked skills
+    c.execute('SELECT Skill '
+              'FROM "Strain Skill Restrictions" '
+              'WHERE '
+              'Strain = ? ', (strain_in, ))
+
+    blocked_skills_sql = c.fetchall()
+
+    for bs in blocked_skills_sql:
+        blocked_skills[bs[0]] = 1
+
+    conn.close()
+    return blocked_skills
+
+
+def fetch_strain_limited_skill_list(strain_in):
+    conn = sqlite3.connect('DRMax.db')
+    c = conn.cursor()
+    skill_list = list()
+    # Fetch all skills from skill restrictions, minus blocked skills
+    c.execute('SELECT s.Skill '
+              'FROM "Skill Descriptions" s '
+              'WHERE '
+              'NOT EXISTS ('
+              'SELECT r.Skill '
+              'FROM "Strain Skill Restrictions" r '
+              'WHERE r.Strain = ? '
+              'AND r.Skill = s.Skill)', (strain_in, ))
+
+    possible_skills_sql = c.fetchall()
+
+    for skill in possible_skills_sql:
+        skill_list.append(skill[0])
+
+    conn.close()
+    return skill_list
+
+
 # Pull down skills from the DB
 def fetch_skills(strain_in, first_class_in=""):
     conn = sqlite3.connect('DRMax.db')
@@ -105,16 +150,7 @@ def fetch_skills(strain_in, first_class_in=""):
     for sk in map(Skills._make, c.fetchall()):
         strain_skills_out.append(sk)
 
-    # Fetch set of blocked skills
-    c.execute('SELECT Skill '
-              'FROM "Strain Skill Restrictions" '
-              'WHERE '
-              'Strain = ? ', (strain_in, ))
-
-    blocked_skills_sql = c.fetchall()
-
-    for bs in blocked_skills_sql:
-        blocked_skills[bs[0]] = 1
+    blocked_skills = fetch_blocked_skills(strain_in)
 
     # Get Open Skills
     c.execute('SELECT Skill,Cost FROM "Open Skill List"')
@@ -248,8 +284,7 @@ class SelectionForm(BoxLayout):
     output_text_prop = StringProperty()
     open_skill_list_button_text = StringProperty()
     open_skill_list_on = BooleanProperty()
-    professions_list = ListProperty()
-    first_professions_list = ListProperty()
+
 
     def __init__(self, **kwargs):
         super(SelectionForm, self).__init__(**kwargs)
@@ -258,13 +293,26 @@ class SelectionForm(BoxLayout):
         self.open_skill_list_on = False
         self.ids.solve_button.bind(on_press=self.solve_character)
         self.ids.open_skill_list_button.bind(on_press=self.open_skill_list_toggle)
-        # BUG: Ergh.  This sucks.  There doesn't seem to be a good way to do interwidget communication
-        self.ids.sspinner.bind(strain_text=self.update_profession_lists)
+
+        application = App.get_running_app()
+        application.bind(skills_list=self.update_skills_list)
 
     def update_profession_lists(self, strain_in):
         self.ids.pspinner1.fillProfessions(strain_in)
         self.ids.pspinner2.fillProfessions(strain_in)
         self.ids.pspinner3.fillProfessions(strain_in)
+
+    def update_skills_list(self, caller, skills_list_in):
+        self.ids.toggle_box.clear_widgets()
+        toggleLabel = Label(text="Required Skills")
+        self.ids.toggle_box.add_widget(toggleLabel)
+        for skill in skills_list_in:
+            toggle = ToggleButton(text=skill, id=skill)
+            toggle.size = (200, 20)
+            toggle.size_hint = (None, None)
+            toggle.pos_hint = {'center_x': 5, 'center_y': .5}
+            self.ids.toggle_box.add_widget(toggle)
+            toggle.bind(on_press=self.skill_list_toggle)
 
     def solve_character(self, btn_pressed):
         print("Solving!")
@@ -275,7 +323,6 @@ class SelectionForm(BoxLayout):
         first_class = self.ids.pspinner1.getProfession()
         second_class = self.ids.pspinner2.getProfession()
         third_class = self.ids.pspinner3.getProfession()
-        # print(self.ids.pspinner3.getProfession())
         open_skills, strain_skills, profs = fetch_skills(strain, first_class)
         max_combo_names, max_skills_in_combo = maximal_skill_set(open_skills, strain_skills, profs, first_class,
                                                                  second_class, third_class, self.open_skill_list_on)
@@ -300,6 +347,10 @@ class SelectionForm(BoxLayout):
             self.open_skill_list_button_text = "Open Skill List On"
         return True
 
+    def skill_list_toggle(self, btn_pressed):
+        print("Skill List Toggle!" + btn_pressed.id)
+        return True
+
 class StrainSpinner(Spinner):
     strain_list = ListProperty()
     strain_list = fetch_strains()
@@ -312,6 +363,20 @@ class StrainSpinner(Spinner):
 
     def get_selected_value(self, object_out, *args):
         self.strain_text = args[0]
+        if self.strain_text != "Select Strain":
+            application = App.get_running_app()
+            local_first_prof_list, local_prof_list = fetch_strain_limited_professions(self.strain_text)
+            application.first_professions_list.clear()
+            application.professions_list.clear()
+            # application.skills_list.clear()
+            application.skills_list = fetch_strain_limited_skill_list(self.strain_text)
+            for prof in local_first_prof_list:
+                if application.first_professions_list.count(prof) == 0:
+                    application.first_professions_list.append(prof)
+            for prof in local_prof_list:
+                if application.professions_list.count(prof) == 0:
+                    application.professions_list.append(prof)
+
 
     def getStrain(self):
         if self.strain_text == "Select Strain":
@@ -321,8 +386,6 @@ class StrainSpinner(Spinner):
 
 
 class ProfessionSpinner(Spinner):
-
-    #professions_list = fetch_professions()
     professions_text = StringProperty()
     professions_text = "Select Profession"
 
@@ -340,11 +403,12 @@ class ProfessionSpinner(Spinner):
         else:
             return self.professions_text
 
-    def fillProfessions(self, strain_in):
-        self.first_professions_list, self.professions_list = fetch_strain_limited_professions(strain_in)
-
 
 class DRMax(App):
+    professions_list = ListProperty()
+    first_professions_list = ListProperty()
+    skills_list = ListProperty()
+
     def build(self):
         return SelectionForm()
 
