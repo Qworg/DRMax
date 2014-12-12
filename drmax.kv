@@ -1,0 +1,79 @@
+SelectionForm:
+<ProfessionSpinner@Spinner>
+    size_hint: (None, None)
+    width: 200
+    height: 40
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    text: root.professions_text
+
+<StrainSpinner@Spinner>
+    size_hint: (None, None)
+    width: 200
+    height: 40
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    text: root.strain_text
+    values: root.strain_list
+
+<SelectionForm>
+    orientation: 'vertical'
+    BoxLayout:
+        GridLayout:
+            cols: 1
+            rows: 3
+            spacing: 20
+            Label:
+                text: 'Strain'
+                size_hint: (None, None)
+                size: 200, 40
+            StrainSpinner:
+                id: sspinner
+            ToggleButton:
+                id: open_skill_list_button
+                size: 200,40
+                size_hint: (None, None)
+                pos_hint: {'center_x': .5, 'center_y': .5}
+                text: root.open_skill_list_button_text
+        GridLayout:
+            cols: 1
+            rows: 4
+            Label:
+                text: 'Profession'
+                size_hint: (None, None)
+                size: 200, 40
+            ProfessionSpinner:
+                id: pspinner1
+                values: app.first_professions_list
+            ProfessionSpinner:
+                id: pspinner2
+                values: app.professions_list
+            ProfessionSpinner:
+                id: pspinner3
+                values: app.professions_list
+        ScrollView:
+            do_scroll_x: False
+            id: scrlv
+
+            GridLayout:
+                cols: 1
+                id: toggle_box
+                size_hint: 1, None
+                height: max(self.minimum_height, scrlv.height)+20
+                spacing: 10
+                Label:
+                    text: 'Required Skills'
+
+
+
+    BoxLayout:
+        size: 800, 400
+        size_hint: None, None
+        spacing: 10
+        TextInput:
+            size_hint: 1, 1
+            text: root.output_text_prop
+            id: output_text
+        Button:
+            size_hint: None, None
+            size: 50, 50
+            text: 'Solve'
+            id: solve_button
