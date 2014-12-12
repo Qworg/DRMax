@@ -3,9 +3,28 @@ __author__ = 'jekramer'
 import sqlite3
 from collections import namedtuple
 import kivy
+from kivy.config import Config
+Config.set('graphics', 'width', '800')
+Config.set('graphics', 'height', '600')
 
 from kivy.app import App
-from kivy.uix.boxlayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.spinner import Spinner
+from kivy.uix.button import Button
+
+
+class SelectionForm(BoxLayout):
+    pass
+
+
+class StrainSpinner(Spinner):
+    pass
+
+
+class ProfessionSpinner(Spinner):
+    pass
+
 
 class DRMax(App):
     pass
@@ -18,7 +37,7 @@ if __name__ == '__main__':
 strain = "Iron Slaves"
 # Set your current classes
 firstClass = "Printer"
-secondClass = ""
+secondClass = "Jones"
 strainSkills = list()
 openSkills = list()
 profs = {}
@@ -178,7 +197,20 @@ def maximal_skill_set(open_skills_in, strain_skills_in, profs_in, first_class_in
     max_filtered_combos = remove_duplicate_triples(max_combos)
     max_combos.clear()
     for combo in max_filtered_combos:
-        max_skills = list(profs_in[combo[0]] | profs_in[combo[1]] | profs_in[combo[2]])
+        max_skills = list()
+        for a_profession in combo:
+            for a_skill in profs_in[a_profession]:
+                if [item[0] for item in max_skills].count(a_skill.Skill) == 0:
+                    max_skills.append(a_skill)
+                else:
+                    # Already Exists!  Check costs
+                    skill_index = [item[0] for item in max_skills].index(a_skill.Skill)
+                    inserted_skill = max_skills.pop(skill_index)
+                    if inserted_skill.Cost >= a_skill.Cost:
+                        max_skills.append(a_skill)
+                    else:
+                        max_skills.append(inserted_skill)
+
         max_skills.sort()
         max_combos.append(max_skills)
 

@@ -1,2 +1,71 @@
-Label:
-    text: "hello world"
+SelectionForm:
+<ProfessionSpinner@Spinner>
+    size_hint: (None, None)
+    width: 200
+    height: 40
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    text: 'Select Profession'
+    values: ["First thing", "Second thing", "Third thing"]
+
+<StrainSpinner@Spinner>
+    size_hint: (None, None)
+    width: 200
+    height: 40
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    text: 'Select Strain'
+    values: ["First thing", "Second thing", "Third thing"]
+
+<SkillToggle@ToggleButton>
+    size_hint: (None, None)
+    width: 200
+    height: 40
+    pos_hint: {'center_x': .5, 'center_y': .5}
+
+<SelectionForm>
+    orientation: 'vertical'
+    BoxLayout:
+        GridLayout:
+            cols: 1
+            rows: 2
+            Label:
+                text: 'Strain'
+                size_hint: (None, None)
+                size: 200, 40
+            StrainSpinner:
+                id: sspinner
+        GridLayout:
+            cols: 1
+            rows: 4
+            Label:
+                text: 'Profession'
+                size_hint: (None, None)
+                size: 200, 40
+            ProfessionSpinner:
+                id: pspinner1
+            ProfessionSpinner:
+                id: pspinner2
+            ProfessionSpinner:
+                id: pspinner3
+        GridLayout:
+            cols: 1
+            orientation: 'vertical'
+            id: skills_box
+            Label:
+                text: 'Required Skills'
+            SkillToggle:
+                id: t1
+                text: 'A Toggle'
+    BoxLayout:
+        size: 800, 100
+        size_hint: None, None
+        spacing: 10
+        TextInput:
+            size_hint: 1, 1
+            text: 'OUTPUT'
+            id: output_text
+        Button:
+            size_hint: None, None
+            size: 50, 50
+            text: 'Solve'
+            id: solve_button
+            on_press: solveCharacter
