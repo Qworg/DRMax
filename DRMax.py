@@ -2,6 +2,7 @@ __author__ = 'jekramer'
 
 import sqlite3
 from collections import namedtuple
+import copy
 import kivy
 from kivy.config import Config
 Config.set('graphics', 'width', '800')
@@ -91,6 +92,7 @@ def fetch_strains():
             strains_out.append(strain_row[0])
 
     conn.close()
+    strains_out.sort()
     return strains_out
 
 
@@ -146,9 +148,10 @@ def fetch_skills(strain_in, first_class_in=""):
     profs_out = {}
 
     # Get Strain Skills
-    c.execute('SELECT Skill,Cost FROM "Strain Skill List" WHERE Strain=?', (strain_in,))
-    for sk in map(Skills._make, c.fetchall()):
-        strain_skills_out.append(sk)
+    if strain_in != "Remenants":
+        c.execute('SELECT Skill,Cost FROM "Strain Skill List" WHERE Strain=?', (strain_in,))
+        for sk in map(Skills._make, c.fetchall()):
+            strain_skills_out.append(sk)
 
     blocked_skills = fetch_blocked_skills(strain_in)
 
@@ -244,8 +247,9 @@ def maximal_skill_set(open_skills_in, strain_skills_in, profs_in, first_class_in
             max_combos.append(key)
     max_filtered_combos = remove_duplicate_triples(max_combos)
     max_combos.clear()
+    max_skills = list()
     for combo in max_filtered_combos:
-        max_skills = list()
+        max_skills.clear()
         if include_open:
             max_skills = open_skills_in
 
@@ -276,7 +280,8 @@ def maximal_skill_set(open_skills_in, strain_skills_in, profs_in, first_class_in
                         max_skills.append(inserted_skill)
 
         max_skills.sort()
-        max_combos.append(max_skills)
+        max_skills_out = copy.deepcopy(max_skills)
+        max_combos.append(copy.deepcopy(max_skills_out))
 
     return max_filtered_combos, max_combos
 
