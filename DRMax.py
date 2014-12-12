@@ -161,7 +161,7 @@ def fetch_skills(strain_in, first_class_in=""):
 
 # Find the maximal intersecting skill set
 def maximal_skill_set(open_skills_in, strain_skills_in, profs_in, first_class_in="", second_class_in="",
-                      include_open=False, include_strain=True):
+                      third_class_in="", include_open=False, include_strain=True):
     disjoint_dict = {}
     open_set = set()
     strain_set = set()
@@ -192,6 +192,8 @@ def maximal_skill_set(open_skills_in, strain_skills_in, profs_in, first_class_in
 
             for prof3 in profs_in:
                 set3.clear()
+                if third_class_in != "":
+                    prof3 = third_class_in
                 for prof_skill in profs_in[prof3]:
                     set3.add(prof_skill.Skill)
                 disjoint_dict[prof1 + ", " + prof2 + ", " + prof3] = len(set1 | set2 | set3 | open_set | strain_set)
@@ -272,10 +274,11 @@ class SelectionForm(BoxLayout):
         strain = self.ids.sspinner.getStrain()
         first_class = self.ids.pspinner1.getProfession()
         second_class = self.ids.pspinner2.getProfession()
+        third_class = self.ids.pspinner3.getProfession()
         # print(self.ids.pspinner3.getProfession())
         open_skills, strain_skills, profs = fetch_skills(strain, first_class)
         max_combo_names, max_skills_in_combo = maximal_skill_set(open_skills, strain_skills, profs, first_class,
-                                                                 second_class, self.open_skill_list_on)
+                                                                 second_class, third_class, self.open_skill_list_on)
 
         output_string = ""
         for name, skill_set in zip(max_combo_names, max_skills_in_combo):
