@@ -11,10 +11,10 @@
  - Lists of defensive skills and escapes as required
  - Single click access
 
-- Separate Strain List data
+- ~~Separate Strain List data~~  Complete!
 
-- Separate Open List data
+- ~~Separate Open List data~~  Complete!
 
-- GUI for users (Kivy?)
+- ~~GUI for users (Kivy?)~~  Complete!
 
 - Easy to use package for individuals to use

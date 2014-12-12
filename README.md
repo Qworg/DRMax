@@ -1,7 +1,11 @@
-An extremely basic solver for "best class combos".
+Requirements:
+Kivy 1.8
+Python 3.3
 
-You'll have to change the code to put in your restrictions, etc.
+A basic solver for "best class combos".
 
-I may clean this up if it gets used.
+Be sure to select your strain first.
+
+Apologies for the current slowness.
 
 Pull requests welcome.
