@@ -11,6 +11,13 @@
  - Lists of defensive skills and escapes as required
  - Single click access
 
+- Ability to maximize for fewer professions
+ - Null Third profession to decide which profession will be best next
+
+- Less Maximized Options
+ - Show number of skills per option
+ - Show the nearest 5
+
 - ~~Separate Strain List data~~  Complete!
 
 - ~~Separate Open List data~~  Complete!
