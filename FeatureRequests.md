@@ -7,8 +7,9 @@
  - Score skills based on power level
  - Create the "most powerful" build based on that score
 
-- Must have Skill List
+- Skill List Restrictions
  - Lists of defensive skills and escapes as required
+ - Ability to toggle between Must Have and Must Not Have (as well as neutral)
  - Single click access
 
 - Ability to maximize for fewer professions
@@ -17,6 +18,9 @@
 - Less Maximized Options
  - Show number of skills per option
  - Show the nearest 5
+
+- Advanced Profession Solver
+ - Pick an AP, let the solver show you how to get there
 
 - ~~Separate Strain List data~~  Complete!
 

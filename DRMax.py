@@ -74,7 +74,7 @@ def fetch_strain_limited_professions(strain_in):
         professions_out.append(pp[0])
 
     conn.close()
-    return first_professions_out,professions_out
+    return first_professions_out, professions_out
 
 # Fetch Strain List
 def fetch_strains():
@@ -246,6 +246,22 @@ def maximal_skill_set(open_skills_in, strain_skills_in, profs_in, first_class_in
     max_combos.clear()
     for combo in max_filtered_combos:
         max_skills = list()
+        if include_open:
+            max_skills = open_skills_in
+
+        if include_strain:
+            for strain_skill in strain_skills_in:
+                if [item[0] for item in max_skills].count(strain_skill.Skill) == 0:
+                    max_skills.append(strain_skill)
+                else:
+                    #Already Exists!  Check costs
+                    skill_index = [item[0] for item in max_skills].index(strain_skill.Skill)
+                    inserted_skill = max_skills.pop(skill_index)
+                    if inserted_skill.Cost >= strain_skill.Cost:
+                        max_skills.append(strain_skill)
+                    else:
+                        max_skills.append(inserted_skill)
+
         for a_profession in combo:
             for a_skill in profs_in[a_profession]:
                 if [item[0] for item in max_skills].count(a_skill.Skill) == 0:
