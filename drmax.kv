@@ -4,21 +4,21 @@ SelectionForm:
     width: 200
     height: 40
     pos_hint: {'center_x': .5, 'center_y': .5}
-    text: 'Select Profession'
-    values: ["First thing", "Second thing", "Third thing"]
+    text: root.professions_text
+    values: root.professions_list
 
 <StrainSpinner@Spinner>
     size_hint: (None, None)
     width: 200
     height: 40
     pos_hint: {'center_x': .5, 'center_y': .5}
-    text: 'Select Strain'
-    values: ["First thing", "Second thing", "Third thing"]
+    text: root.strain_text
+    values: root.strain_list
 
 <SkillToggle@ToggleButton>
     size_hint: (None, None)
     width: 200
-    height: 40
+    height: 20
     pos_hint: {'center_x': .5, 'center_y': .5}
 
 <SelectionForm>
@@ -26,13 +26,20 @@ SelectionForm:
     BoxLayout:
         GridLayout:
             cols: 1
-            rows: 2
+            rows: 3
+            spacing: 20
             Label:
                 text: 'Strain'
                 size_hint: (None, None)
                 size: 200, 40
             StrainSpinner:
                 id: sspinner
+            ToggleButton:
+                id: open_skill_list_button
+                size: 200,40
+                size_hint: (None, None)
+                pos_hint: {'center_x': .5, 'center_y': .5}
+                text: root.open_skill_list_button_text
         GridLayout:
             cols: 1
             rows: 4
@@ -46,26 +53,29 @@ SelectionForm:
                 id: pspinner2
             ProfessionSpinner:
                 id: pspinner3
-        GridLayout:
-            cols: 1
-            orientation: 'vertical'
-            id: skills_box
-            Label:
-                text: 'Required Skills'
-            SkillToggle:
-                id: t1
-                text: 'A Toggle'
+        ScrollView:
+            do_scroll_x: False
+            GridLayout:
+                cols: 1
+                rows: 2
+                id: skills_box
+                size_hint_y: None
+                Label:
+                    text: 'Required Skills'
+                SkillToggle:
+                    id: t1
+                    text: 'A Toggle'
+
     BoxLayout:
-        size: 800, 100
+        size: 800, 400
         size_hint: None, None
         spacing: 10
         TextInput:
             size_hint: 1, 1
-            text: 'OUTPUT'
+            text: root.output_text_prop
             id: output_text
         Button:
             size_hint: None, None
             size: 50, 50
             text: 'Solve'
             id: solve_button
-            on_press: solveCharacter

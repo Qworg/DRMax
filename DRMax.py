@@ -12,35 +12,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
+from kivy.properties import ObjectProperty, StringProperty, ListProperty, BooleanProperty
 
-
-class SelectionForm(BoxLayout):
-    pass
-
-
-class StrainSpinner(Spinner):
-    pass
-
-
-class ProfessionSpinner(Spinner):
-    pass
-
-
-class DRMax(App):
-    pass
-
-if __name__ == '__main__':
-    DRMax().run()
-
-
-# Set your strain
-strain = "Iron Slaves"
-# Set your current classes
-firstClass = "Printer"
-secondClass = "Jones"
-strainSkills = list()
-openSkills = list()
-profs = {}
 
 Skills = namedtuple('Skills', 'Skill, Cost')
 
@@ -56,8 +29,8 @@ def fetch_professions():
     professions_sql = c.fetchall()
 
     for profession_row in professions_sql:
-        if professions_out.count(profession_row) == 0:
-            professions_out.append(profession_row)
+        if professions_out.count(profession_row[0]) == 0:
+            professions_out.append(profession_row[0])
 
     conn.close()
     return professions_out
@@ -74,8 +47,8 @@ def fetch_strains():
     strains_sql = c.fetchall()
 
     for strain_row in strains_sql:
-        if strains_out.count(strain_row) == 0:
-            strains_out.append(strain_row)
+        if strains_out.count(strain_row[0]) == 0:
+            strains_out.append(strain_row[0])
 
     conn.close()
     return strains_out
@@ -232,9 +205,96 @@ def remove_duplicate_triples(triple_list_in):
 
     return filtered_list_out
 
+class SelectionForm(BoxLayout):
+    output_text_prop = StringProperty()
+    open_skill_list_button_text = StringProperty()
+    open_skill_list_on = BooleanProperty()
 
-openSkills, strainSkills, profs = fetch_skills(strain, firstClass)
-maxComboNames, maxSkillsInCombo = maximal_skill_set(openSkills, strainSkills, profs, firstClass, secondClass)
 
-for name, skillset in zip(maxComboNames, maxSkillsInCombo):
-    print(name, skillset)
+    def __init__(self, **kwargs):
+        super(SelectionForm, self).__init__(**kwargs)
+        self.output_text_prop = "Please be sure to select a strain first"
+        self.open_skill_list_button_text = "Open Skill List Off"
+        self.open_skill_list_on = False
+        self.ids.solve_button.bind(on_press=self.solve_character)
+        self.ids.open_skill_list_button.bind(on_press=self.open_skill_list_toggle)
+
+    def solve_character(self, btn_pressed):
+        print("Solving!")
+        strain_skills = list()
+        open_skills = list()
+        profs = {}
+        strain = self.ids.sspinner.getStrain()
+        first_class = self.ids.pspinner1.getProfession()
+        second_class = self.ids.pspinner2.getProfession()
+        # print(self.ids.pspinner3.getProfession())
+        open_skills, strain_skills, profs = fetch_skills(strain, first_class)
+        max_combo_names, max_skills_in_combo = maximal_skill_set(open_skills, strain_skills, profs, first_class,
+                                                                 second_class, self.open_skill_list_on)
+
+        output_string = ""
+        for name, skill_set in zip(max_combo_names, max_skills_in_combo):
+            output_string = output_string + ', '.join(name) + '\n'
+            for skill in skill_set:
+                output_string = output_string + skill.Skill + ': ' + skill.Cost + '\n'
+            output_string = output_string + '\n\n'
+
+        self.output_text_prop = output_string
+        return True
+
+    def open_skill_list_toggle(self, btn_pressed):
+        print("Toggle Open Skill List!")
+        if self.open_skill_list_on:
+            self.open_skill_list_on = False
+            self.open_skill_list_button_text = "Open Skill List Off"
+        else:
+            self.open_skill_list_on = True
+            self.open_skill_list_button_text = "Open Skill List On"
+        return True
+
+class StrainSpinner(Spinner):
+    strain_list = ListProperty()
+    strain_list = fetch_strains()
+    strain_text = StringProperty()
+    strain_text = "Select Strain"
+    def __init__(self, **kwargs):
+        super(StrainSpinner, self).__init__(**kwargs)
+        self.bind(text=self.get_selected_value)
+
+    def get_selected_value(self, object_out, *args):
+        self.strain_text = args[0]
+        return True
+
+    def getStrain(self):
+        if self.strain_text == "Select Strain":
+            return ""
+        else:
+            return self.strain_text
+
+
+class ProfessionSpinner(Spinner):
+    professions_list = ListProperty()
+    professions_list = fetch_professions()
+    professions_text = StringProperty()
+    professions_text = "Select Profession"
+    def __init__(self, **kwargs):
+        super(ProfessionSpinner, self).__init__(**kwargs)
+        self.bind(text=self.get_selected_value)
+
+    def get_selected_value(self, object_out, *args):
+        self.professions_text = args[0]
+        return True
+
+    def getProfession(self):
+        if self.professions_text == "Select Profession":
+            return ""
+        else:
+            return self.professions_text
+
+
+class DRMax(App):
+    def build(self):
+        return SelectionForm()
+
+if __name__ == '__main__':
+    DRMax().run()
