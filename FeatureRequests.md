@@ -22,6 +22,10 @@
 - Advanced Profession Solver
  - Pick an AP, let the solver show you how to get there
 
+- Note Prerequesites, Understand Prerequisite logic
+ - If a skill has a requirement, note that next to the skill.
+ - If a skill has a requirement, make sure it is on the list when calculating maximum skill possibility.
+
 - ~~Separate Strain List data~~  Complete!
 
 - ~~Separate Open List data~~  Complete!
